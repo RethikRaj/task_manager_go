@@ -10,10 +10,15 @@ import (
 	"time"
 
 	"github.com/RethikRaj/task_manager_go/internal/config"
+	"github.com/joho/godotenv"
 )
 
 func main() {
 	log.Println("Helloooooooooo... main entry point")
+
+	if err := godotenv.Load(); err != nil {
+		log.Println("no .env file found")
+	}
 
 	// 1. Load config
 	cfg, err := config.LoadConfig()

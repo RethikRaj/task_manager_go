@@ -34,7 +34,7 @@ func LoadConfig() (*Config, error) {
 
 func getEnv(key string, fallback string) string {
 	value, ok := os.LookupEnv(key)
-	fmt.Println(ok) // false because i haven't exported the env variable anywhere
+	fmt.Println(ok) // true because the env variable is injected using godotenv library
 
 	if !ok {
 		if fallback == "" {
