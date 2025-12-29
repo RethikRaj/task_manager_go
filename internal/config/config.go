@@ -2,59 +2,31 @@ package config
 
 import (
 	"fmt"
-	"log"
-	"os"
 	"time"
+
+	"github.com/ilyakaznacheev/cleanenv"
 )
 
 type Config struct {
-	HTTP HTTPConfig
+	HTTP HTTPConfig `env-prefix:"HTTP_"`
 }
 
+// These tags replace the manual functions written before : getEnv, getEnvDuration , manual defaults , parsing logic
 type HTTPConfig struct {
-	Addr         string
-	ReadTimeout  time.Duration
-	WriteTimeout time.Duration
-	IdleTimeout  time.Duration
+	Addr         string        `env:"ADDRESS" env-default:":8080"`
+	ReadTimeout  time.Duration `env:"READ_TIMEOUT" env-default:"5s"`
+	WriteTimeout time.Duration `env:"WRITE_TIMEOUT" env-default:"10s"`
+	IdleTimeout  time.Duration `env:"IDLE_TIMEOUT" env-default:"60s"`
 }
 
 func LoadConfig() (*Config, error) {
-	cfg := &Config{
-		HTTP: HTTPConfig{
-			Addr:         getEnv("HTTP_ADDRESS", ":8080"),
-			ReadTimeout:  getEnvDuration("HTTP_READ_TIMEOUT", 5*time.Second),
-			WriteTimeout: getEnvDuration("HTTP_WRITE_TIMEOUT", 10*time.Second),
-			IdleTimeout:  getEnvDuration("HTTP_IDLE_TIMEOUT", 60*time.Second),
-		},
-	}
+	var cfg Config
 
 	fmt.Println(cfg)
-	return cfg, nil
-}
 
-func getEnv(key string, fallback string) string {
-	value, ok := os.LookupEnv(key)
-	fmt.Println(ok) // true because the env variable is injected using godotenv library
-
-	if !ok {
-		if fallback == "" {
-			log.Fatalf("missing required env var: %s", key)
-		}
-		return fallback
+	if err := cleanenv.ReadEnv(&cfg); err != nil {
+		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
-	return value
-}
-
-func getEnvDuration(key string, fallback time.Duration) time.Duration {
-	value, ok := os.LookupEnv(key)
-
-	if !ok {
-		return fallback
-	}
-
-	duration, err := time.ParseDuration(value)
-	if err != nil {
-		log.Fatalf("invalid duration value for env var %s: %s", key, value)
-	}
-	return duration
+	fmt.Println(cfg)
+	return &cfg, nil
 }
