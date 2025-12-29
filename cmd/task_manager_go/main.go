@@ -8,10 +8,19 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/RethikRaj/task_manager_go/internal/config"
 )
 
 func main() {
 	log.Println("Helloooooooooo... main entry point")
+
+	// 1. Load config
+	cfg, err := config.LoadConfig()
+
+	if err != nil {
+		log.Fatalf("failed to load config: %v", err)
+	}
 
 	// Let's build a server
 	// This context represents the entire lifetime of the application.
@@ -27,10 +36,10 @@ func main() {
 	// We use http.Server instead of http.ListenAndServe
 	// so we can control timeouts and perform graceful shutdown.
 	server := &http.Server{
-		Addr:         ":8080",
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  60 * time.Second,
+		Addr:         cfg.HTTP.Addr,
+		ReadTimeout:  cfg.HTTP.ReadTimeout,
+		WriteTimeout: cfg.HTTP.WriteTimeout,
+		IdleTimeout:  cfg.HTTP.IdleTimeout,
 	}
 
 	// 3. Start the server in a goroutine
