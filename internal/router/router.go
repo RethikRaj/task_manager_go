@@ -1,15 +1,16 @@
 package router
 
-import "net/http"
+import (
+	"net/http"
 
-func NewRouter() *http.ServeMux {
+	"github.com/RethikRaj/task_manager_go/internal/handler"
+)
+
+func NewRouter(healthHandler *handler.HealthHandler) http.Handler {
 	mux := http.NewServeMux()
 
 	// health check
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("ok"))
-	})
+	mux.HandleFunc("/health", healthHandler.Check)
 
 	return mux
 }
