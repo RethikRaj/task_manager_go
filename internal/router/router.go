@@ -6,7 +6,7 @@ import (
 	"github.com/RethikRaj/task_manager_go/internal/handler"
 )
 
-func NewRouter(healthHandler *handler.HealthHandler, authHandler *handler.AuthHandler) http.Handler {
+func NewRouter(healthHandler *handler.HealthHandler, authHandler *handler.AuthHandler, taskHandler *handler.TaskHandler) http.Handler {
 	mux := http.NewServeMux()
 
 	// health check

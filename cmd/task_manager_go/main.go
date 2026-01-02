@@ -44,13 +44,15 @@ func main() {
 	// 4. Initialize services, handlers and router
 	// services
 	authService := service.NewAuthService()
+	taskService := service.NewTaskService()
 
 	// handlers
 	healthHandler := handler.NewHealthHandler()
 	authHandler := handler.NewAuthHandler(authService)
+	taskHandler := handler.NewTaskHandler(taskService)
 
 	// router
-	router := router.NewRouter(healthHandler, authHandler)
+	router := router.NewRouter(healthHandler, authHandler, taskHandler)
 
 	// 5. Create HTTP server with explicit configuration
 	server := &http.Server{
