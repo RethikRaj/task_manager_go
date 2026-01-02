@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/RethikRaj/task_manager_go/internal/service"
@@ -24,8 +25,11 @@ func (h *TaskHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// We will add JSON later
-	for _, t := range tasks {
-		w.Write([]byte(t.Title + "\n"))
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	// The below line convert tasks(a slice of go structs variable) to JSON and stream it to the HTTP response(w)
+	if err := json.NewEncoder(w).Encode(tasks); err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
 	}
 }

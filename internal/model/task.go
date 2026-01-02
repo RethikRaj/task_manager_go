@@ -3,7 +3,7 @@ package model
 import "time"
 
 type Task struct {
-	ID        int
-	Title     string
-	CreatedAt time.Time
+	ID        int       `json:"id"`
+	Title     string    `json:"title"`
+	CreatedAt time.Time `json:"created_at"`
 }
