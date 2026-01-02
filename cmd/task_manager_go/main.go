@@ -12,6 +12,7 @@ import (
 	"github.com/RethikRaj/task_manager_go/internal/config"
 	"github.com/RethikRaj/task_manager_go/internal/handler"
 	"github.com/RethikRaj/task_manager_go/internal/router"
+	"github.com/RethikRaj/task_manager_go/internal/service"
 	"github.com/joho/godotenv"
 )
 
@@ -40,10 +41,16 @@ func main() {
 
 	log.Println("task-manager starting...")
 
-	// 4. Initialize http router
+	// 4. Initialize services, handlers and router
+	// services
+	authService := service.NewAuthService()
+
 	// handlers
 	healthHandler := handler.NewHealthHandler()
-	router := router.NewRouter(healthHandler)
+	authHandler := handler.NewAuthHandler(authService)
+
+	// router
+	router := router.NewRouter(healthHandler, authHandler)
 
 	// 5. Create HTTP server with explicit configuration
 	server := &http.Server{

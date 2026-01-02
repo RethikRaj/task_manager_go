@@ -1,15 +1,21 @@
 package handler
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/RethikRaj/task_manager_go/internal/service"
+)
 
 type AuthHandler struct {
-	// later: auth service
+	authService service.AuthService
+}
+
+func NewAuthHandler(authService service.AuthService) *AuthHandler {
+	return &AuthHandler{
+		authService: authService,
+	}
 }
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	// login logic here
-}
-
-func NewAuthHandler() *AuthHandler {
-	return &AuthHandler{}
 }
