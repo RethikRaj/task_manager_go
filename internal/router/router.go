@@ -12,5 +12,6 @@ func NewRouter(healthHandler *handler.HealthHandler, authHandler *handler.AuthHa
 	// health check
 	mux.HandleFunc("/health", healthHandler.Check)
 
+	mux.HandleFunc("/tasks", taskHandler.List)
 	return mux
 }
