@@ -1,17 +1,23 @@
 package repository
 
-import "context"
+import (
+	"context"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+)
 
 type TaskRepository interface {
 	Ping(ctx context.Context) error
 }
 
 type taskRepository struct {
-	// later: *pgxpool.Pool
+	pool *pgxpool.Pool
 }
 
-func NewTaskRepository() TaskRepository {
-	return &taskRepository{}
+func NewTaskRepository(pool *pgxpool.Pool) TaskRepository {
+	return &taskRepository{
+		pool: pool,
+	}
 }
 
 func (r *taskRepository) Ping(ctx context.Context) error {

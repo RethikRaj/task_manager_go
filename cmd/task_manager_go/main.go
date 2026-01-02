@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/RethikRaj/task_manager_go/internal/config"
+	"github.com/RethikRaj/task_manager_go/internal/database"
 	"github.com/RethikRaj/task_manager_go/internal/handler"
 	"github.com/RethikRaj/task_manager_go/internal/repository"
 	"github.com/RethikRaj/task_manager_go/internal/router"
@@ -42,9 +43,16 @@ func main() {
 
 	log.Println("task-manager starting...")
 
-	// 4. Initialize repositories, services, handlers and router
+	// 4. Initialize DB, repositories, services, handlers and router
+	// DB
+	dbPool, err := database.NewDBPool(ctx, cfg.DB.URL)
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
+	defer dbPool.Close()
+
 	// Repositories
-	taskRepo := repository.NewTaskRepository()
+	taskRepo := repository.NewTaskRepository(dbPool)
 
 	// services
 	authService := service.NewAuthService()
