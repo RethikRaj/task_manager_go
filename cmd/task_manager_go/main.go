@@ -11,6 +11,7 @@ import (
 
 	"github.com/RethikRaj/task_manager_go/internal/config"
 	"github.com/RethikRaj/task_manager_go/internal/handler"
+	"github.com/RethikRaj/task_manager_go/internal/repository"
 	"github.com/RethikRaj/task_manager_go/internal/router"
 	"github.com/RethikRaj/task_manager_go/internal/service"
 	"github.com/joho/godotenv"
@@ -41,10 +42,13 @@ func main() {
 
 	log.Println("task-manager starting...")
 
-	// 4. Initialize services, handlers and router
+	// 4. Initialize repositories, services, handlers and router
+	// Repositories
+	taskRepo := repository.NewTaskRepository()
+
 	// services
 	authService := service.NewAuthService()
-	taskService := service.NewTaskService()
+	taskService := service.NewTaskService(taskRepo)
 
 	// handlers
 	healthHandler := handler.NewHealthHandler()
