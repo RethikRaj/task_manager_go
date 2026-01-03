@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/RethikRaj/task_manager_go/internal/dto"
 	"github.com/RethikRaj/task_manager_go/internal/service"
 )
 
@@ -30,6 +31,27 @@ func (h *TaskHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	// The below line convert tasks(a slice of go structs variable) to JSON and stream it to the HTTP response(w)
 	if err := json.NewEncoder(w).Encode(tasks); err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+	}
+}
+
+func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
+	var req dto.CreateTaskRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "failed to decode request body", http.StatusBadRequest)
+		return
+	}
+
+	newTask, err := h.taskService.Create(r.Context(), req.Title)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+
+	if err := json.NewEncoder(w).Encode(newTask); err != nil {
 		http.Error(w, "failed to encode response", http.StatusInternalServerError)
 	}
 }

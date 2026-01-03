@@ -10,6 +10,7 @@ import (
 type TaskRepository interface {
 	Ping(ctx context.Context) error
 	List(ctx context.Context) ([]model.Task, error)
+	Create(ctx context.Context, title string) (model.Task, error)
 }
 
 type taskRepository struct {
@@ -52,4 +53,20 @@ func (r *taskRepository) List(ctx context.Context) ([]model.Task, error) {
 	}
 
 	return tasks, nil
+}
+
+func (r *taskRepository) Create(ctx context.Context, title string) (model.Task, error) {
+	var t model.Task
+
+	err := r.pool.QueryRow(ctx, `
+		INSERT INTO tasks (title)
+		VALUES ($1)
+		RETURNING id, title, created_at
+	`, title).Scan(&t.ID, &t.Title, &t.CreatedAt)
+
+	if err != nil {
+		return model.Task{}, err
+	}
+
+	return t, nil
 }
