@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/RethikRaj/task_manager_go/internal/dto"
+	"github.com/RethikRaj/task_manager_go/internal/errs"
 	"github.com/RethikRaj/task_manager_go/internal/service"
 )
 
@@ -47,20 +48,15 @@ func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 	// 2. Req validation
 	req.Title = strings.TrimSpace(req.Title)
 
-	if req.Title == "" {
-		http.Error(w, "title is required", http.StatusBadRequest)
-		return
-	}
-
-	if len(req.Title) > 200 {
-		http.Error(w, "title must be at most 200 characters", http.StatusBadRequest)
-		return
-	}
-
 	// 3. Call service
 	newTask, err := h.taskService.Create(r.Context(), req.Title)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		switch err {
+		case errs.ErrTitleRequired, errs.ErrTitleTooLong:
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		default:
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+		}
 		return
 	}
 

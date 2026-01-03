@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"errors"
 
+	"github.com/RethikRaj/task_manager_go/internal/errs"
 	"github.com/RethikRaj/task_manager_go/internal/model"
 	"github.com/RethikRaj/task_manager_go/internal/repository"
 )
@@ -33,9 +33,14 @@ func (s *taskService) List(ctx context.Context) ([]model.Task, error) {
 }
 
 func (s *taskService) Create(ctx context.Context, title string) (model.Task, error) {
-	// minimal validation (more later)
+	// Validation
 	if title == "" {
-		return model.Task{}, errors.New("title is required")
+		return model.Task{}, errs.ErrTitleRequired
 	}
+
+	if len(title) > 200 {
+		return model.Task{}, errs.ErrTitleTooLong
+	}
+
 	return s.taskRepo.Create(ctx, title)
 }
