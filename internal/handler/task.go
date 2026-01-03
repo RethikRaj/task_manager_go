@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/RethikRaj/task_manager_go/internal/dto"
 	"github.com/RethikRaj/task_manager_go/internal/service"
@@ -37,17 +38,33 @@ func (h *TaskHandler) List(w http.ResponseWriter, r *http.Request) {
 
 func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req dto.CreateTaskRequest
+	// 1. Deserialization
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "failed to decode request body", http.StatusBadRequest)
 		return
 	}
 
+	// 2. Req validation
+	req.Title = strings.TrimSpace(req.Title)
+
+	if req.Title == "" {
+		http.Error(w, "title is required", http.StatusBadRequest)
+		return
+	}
+
+	if len(req.Title) > 200 {
+		http.Error(w, "title must be at most 200 characters", http.StatusBadRequest)
+		return
+	}
+
+	// 3. Call service
 	newTask, err := h.taskService.Create(r.Context(), req.Title)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// 4. Success response
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
