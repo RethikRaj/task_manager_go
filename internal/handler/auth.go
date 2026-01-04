@@ -1,8 +1,13 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
+	"strings"
 
+	"github.com/RethikRaj/task_manager_go/internal/common"
+	"github.com/RethikRaj/task_manager_go/internal/dto"
+	"github.com/RethikRaj/task_manager_go/internal/errs"
 	"github.com/RethikRaj/task_manager_go/internal/service"
 )
 
@@ -16,6 +21,42 @@ func NewAuthHandler(authService service.AuthService) *AuthHandler {
 	}
 }
 
-func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
-	// login logic here
+func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
+	// 1. Deserialization
+	var req dto.SignUpRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		common.WriteJSONError(w, "failed to decode body", "INVALID_JSON_DECODE_FAILED", http.StatusInternalServerError)
+	}
+
+	// 2. Req validation
+	req.Email = strings.TrimSpace(req.Email)
+	req.Password = strings.TrimSpace(req.Password)
+
+	// 3. Call service layer
+	user, err := h.authService.SignUp(r.Context(), req.Email, req.Password)
+
+	if err != nil {
+		switch err {
+		case errs.ErrInvalidCredentials:
+			common.WriteJSONError(w, err.Error(), "INVALID_CREDENTIALS", http.StatusBadRequest)
+		default:
+			common.WriteJSONError(w, err.Error(), "INTERNAL_SERVER_ERROR", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	// 4. Construct and Serialize and send repsonse
+
+	resp := dto.SignUpResponse{
+		ID:    user.ID,
+		Email: user.Email,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		common.WriteJSONError(w, "failed to encode response", "JSON_ENCODE_FAILED", http.StatusInternalServerError)
+	}
 }

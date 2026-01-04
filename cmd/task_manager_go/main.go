@@ -53,9 +53,10 @@ func main() {
 
 	// Repositories
 	taskRepo := repository.NewTaskRepository(dbPool)
+	authRepo := repository.NewAuthRepository(dbPool)
 
 	// services
-	authService := service.NewAuthService()
+	authService := service.NewAuthService(authRepo)
 	taskService := service.NewTaskService(taskRepo)
 
 	// handlers
