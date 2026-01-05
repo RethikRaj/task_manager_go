@@ -8,9 +8,3 @@ var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
 	ErrEmailAlreadyExist  = errors.New("email already exists")
 )
-
-type APIError struct {
-	Status  int    `json:"status"`
-	Message string `json:"message"`
-	Code    string `json:"code"`
-}

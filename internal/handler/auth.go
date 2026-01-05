@@ -1,12 +1,10 @@
 package handler
 
 import (
-	"bytes"
 	"encoding/json"
 	"net/http"
 	"strings"
 
-	"github.com/RethikRaj/task_manager_go/internal/common"
 	"github.com/RethikRaj/task_manager_go/internal/dto"
 	"github.com/RethikRaj/task_manager_go/internal/errs"
 	"github.com/RethikRaj/task_manager_go/internal/service"
@@ -27,7 +25,14 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var req dto.SignUpRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		common.WriteJSONError(w, "failed to decode body", "INVALID_JSON_DECODE_FAILED", http.StatusInternalServerError)
+		errResp := ErrorResponse{
+			Message: "failed to decode request body",
+			Code:    "INVALID_JSON_DECODE_FAILED",
+			Status:  http.StatusBadRequest,
+			Success: false,
+		}
+		SendJSONResponse(w, errResp.Status, errResp)
+		return
 	}
 
 	// 2. Req validation
@@ -38,34 +43,39 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	user, err := h.authService.SignUp(r.Context(), req.Email, req.Password)
 
 	if err != nil {
+		errResp := ErrorResponse{
+			Message: err.Error(),
+			Success: false,
+		}
+
 		switch err {
 		case errs.ErrInvalidCredentials:
-			common.WriteJSONError(w, err.Error(), "INVALID_CREDENTIALS", http.StatusBadRequest)
+			errResp.Code = "INVALID_CREDENTIALS"
+			errResp.Status = http.StatusBadRequest
 		default:
-			common.WriteJSONError(w, err.Error(), "INTERNAL_SERVER_ERROR", http.StatusInternalServerError)
+			errResp.Code = "INTERNAL_SERVER_ERROR"
+			errResp.Status = http.StatusInternalServerError
 		}
+		SendJSONResponse(w, errResp.Status, errResp)
 		return
 	}
 
 	// 4. Construct and Serialize and send repsonse
 
 	// 4.1 Construct Response
-	resp := dto.SignUpResponse{
+	data := dto.SignUpResponse{
 		ID:    user.ID,
 		Email: user.Email,
 	}
 
-	// 4.2 Serialize response
-	buf := new(bytes.Buffer)
-
-	if err := json.NewEncoder(buf).Encode(resp); err != nil {
-		common.WriteJSONError(w, "failed to encode response", "JSON_ENCODE_FAILED", http.StatusInternalServerError)
-		return
+	succesResp := SuccessResponse{
+		Status:  http.StatusCreated,
+		Message: "User created successfully",
+		Data:    data,
+		Success: true,
 	}
 
-	// 4.3 Send Response
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	w.Write(buf.Bytes())
+	// 4.2 Serialize and send response
+	SendJSONResponse(w, succesResp.Status, succesResp)
 
 }
