@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -63,11 +64,24 @@ func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 4. Success response
+	// 4. Construct , Serialize , and send suceess response
+
+	// 4.2 Serialization
+
+	// 4.2.1. Create a memory buffer (the staging area)
+	buf := new(bytes.Buffer)
+
+	// 4.2.2. Encode into the buffer, NOT the ResponseWriter
+	if err := json.NewEncoder(buf).Encode(newTask); err != nil {
+		common.WriteJSONError(w, "failed to encode response", "FAILED_TO_ENCODE_RESPONSE", http.StatusInternalServerError)
+		return
+	}
+
+	// 4.2.3. If we reached here, the JSON is valid and stored in 'buf'
+
+	// 4.3. Send the response
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
-	if err := json.NewEncoder(w).Encode(newTask); err != nil {
-		common.WriteJSONError(w, "failed to encode response", "FAILED_TO_ENCODE_RESPONSE", http.StatusInternalServerError)
-	}
+	w.Write(buf.Bytes())
 }

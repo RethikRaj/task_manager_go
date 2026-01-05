@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -48,15 +49,23 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	// 4. Construct and Serialize and send repsonse
 
+	// 4.1 Construct Response
 	resp := dto.SignUpResponse{
 		ID:    user.ID,
 		Email: user.Email,
 	}
 
+	// 4.2 Serialize response
+	buf := new(bytes.Buffer)
+
+	if err := json.NewEncoder(buf).Encode(resp); err != nil {
+		common.WriteJSONError(w, "failed to encode response", "JSON_ENCODE_FAILED", http.StatusInternalServerError)
+		return
+	}
+
+	// 4.3 Send Response
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
+	w.Write(buf.Bytes())
 
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		common.WriteJSONError(w, "failed to encode response", "JSON_ENCODE_FAILED", http.StatusInternalServerError)
-	}
 }
