@@ -37,9 +37,9 @@ func (r *authRepository) Create(ctx context.Context, email string, password stri
 
 func (r *authRepository) FindUserByEmail(ctx context.Context, email string) (model.User, error) {
 	var u model.User
-	query := `SELECT id, email FROM users WHERE email = $1`
+	query := `SELECT id, email, password FROM users WHERE email = $1`
 
-	err := r.pool.QueryRow(ctx, query, email).Scan(&u.ID, &u.Email)
+	err := r.pool.QueryRow(ctx, query, email).Scan(&u.ID, &u.Email, &u.Password)
 
 	if err != nil {
 		return model.User{}, err

@@ -79,3 +79,45 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	SendJSONResponse(w, succesResp.Status, succesResp)
 
 }
+
+func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
+	var req dto.SignInRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		errResp := ErrorResponse{
+			Message: "failed to decode request body",
+			Code:    "INVALID_JSON_DECODE_FAILED",
+			Status:  http.StatusBadRequest,
+			Success: false,
+		}
+		SendJSONResponse(w, errResp.Status, errResp)
+		return
+	}
+
+	token, err := h.authService.Login(r.Context(), req.Email, req.Password)
+
+	if err != nil {
+		errResp := ErrorResponse{
+			Success: false,
+			Message: err.Error(),
+		}
+		switch err {
+		case errs.ErrInvalidCredentials:
+			errResp.Code = "INVALID_CREDENTIALS"
+			errResp.Status = http.StatusBadRequest
+		default:
+			errResp.Code = "INTERNAL_SERVER_ERROR"
+			errResp.Status = http.StatusInternalServerError
+		}
+		SendJSONResponse(w, errResp.Status, errResp)
+		return
+	}
+
+	successResp := SuccessResponse{
+		Status:  http.StatusOK,
+		Success: true,
+		Message: "Login Successful",
+		Data:    token,
+	}
+
+	SendJSONResponse(w, successResp.Status, successResp)
+}

@@ -25,5 +25,7 @@ func NewRouter(healthHandler *handler.HealthHandler, authHandler *handler.AuthHa
 
 	mux.HandleFunc("/auth/signup", authHandler.SignUp)
 
+	mux.HandleFunc("/auth/signin", authHandler.SignIn)
+
 	return mux
 }

@@ -14,17 +14,20 @@ import (
 type AuthService interface {
 	Ping(ctx context.Context) error
 	SignUp(ctx context.Context, email string, password string) (model.User, error)
+	Login(ctx context.Context, email string, password string) (string, error)
 }
 
 // Private implementation of authService
 type authService struct {
-	authRepo repository.AuthRepository
+	authRepo  repository.AuthRepository
+	jwtSecret string
 }
 
 // We return interface so that handlers/callers don't know the concrete type.
-func NewAuthService(authRepo repository.AuthRepository) AuthService {
+func NewAuthService(authRepo repository.AuthRepository, jwtSecret string) AuthService {
 	return &authService{
-		authRepo: authRepo,
+		authRepo:  authRepo,
+		jwtSecret: jwtSecret,
 	}
 }
 
@@ -57,4 +60,26 @@ func (s *authService) SignUp(ctx context.Context, email string, password string)
 	}
 
 	return user, nil
+}
+
+func (s *authService) Login(ctx context.Context, email string, password string) (string, error) {
+	// Check if user exists
+	user, err := s.authRepo.FindUserByEmail(ctx, email)
+
+	if err != nil {
+		return "", errs.ErrInvalidCredentials
+	}
+
+	// Check if password match
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		return "", errs.ErrInvalidCredentials
+	}
+
+	// Generate token
+	token, err := GenerateToken(user.ID, s.jwtSecret)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }

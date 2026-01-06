@@ -56,7 +56,7 @@ func main() {
 	authRepo := repository.NewAuthRepository(dbPool)
 
 	// services
-	authService := service.NewAuthService(authRepo)
+	authService := service.NewAuthService(authRepo, cfg.Auth.JWTSecret)
 	taskService := service.NewTaskService(taskRepo)
 
 	// handlers

@@ -10,6 +10,7 @@ import (
 type Config struct {
 	HTTP HTTPConfig `env-prefix:"HTTP_"`
 	DB   DBConfig
+	Auth AuthConfig
 }
 
 // These tags replace the manual functions written before : getEnv, getEnvDuration , manual defaults , parsing logic
@@ -22,6 +23,10 @@ type HTTPConfig struct {
 
 type DBConfig struct {
 	URL string `env:"DATABASE_URL" env-required:"true"`
+}
+
+type AuthConfig struct {
+	JWTSecret string `env:"JWT_SECRET" env-required:"true"`
 }
 
 func LoadConfig() (*Config, error) {
