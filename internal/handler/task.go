@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -22,10 +21,7 @@ func NewTaskHandler(taskService service.TaskService) *TaskHandler {
 }
 
 func (h *TaskHandler) List(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Request reached controller")
 	tasks, err := h.taskService.List(r.Context())
-	fmt.Println("Tasks:", tasks)
-	fmt.Println("Error:", err)
 
 	if err != nil {
 		errResp := ErrorResponse{
