@@ -12,6 +12,7 @@ import (
 	"github.com/RethikRaj/task_manager_go/internal/config"
 	"github.com/RethikRaj/task_manager_go/internal/database"
 	"github.com/RethikRaj/task_manager_go/internal/handler"
+	"github.com/RethikRaj/task_manager_go/internal/middleware"
 	"github.com/RethikRaj/task_manager_go/internal/repository"
 	"github.com/RethikRaj/task_manager_go/internal/router"
 	"github.com/RethikRaj/task_manager_go/internal/service"
@@ -64,8 +65,11 @@ func main() {
 	authHandler := handler.NewAuthHandler(authService)
 	taskHandler := handler.NewTaskHandler(taskService)
 
+	// middlewares
+	authMiddleware := middleware.AuthMiddleware(cfg.Auth.JWTSecret)
+
 	// router
-	router := router.NewRouter(healthHandler, authHandler, taskHandler)
+	router := router.NewRouter(healthHandler, authHandler, taskHandler, authMiddleware)
 
 	// 5. Create HTTP server with explicit configuration
 	server := &http.Server{
