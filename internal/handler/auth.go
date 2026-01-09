@@ -112,11 +112,15 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	data := dto.SignInResponse{
+		AccessToken: token,
+	}
+
 	successResp := SuccessResponse{
 		Status:  http.StatusOK,
 		Success: true,
 		Message: "Login Successful",
-		Data:    token,
+		Data:    data,
 	}
 
 	SendJSONResponse(w, successResp.Status, successResp)
