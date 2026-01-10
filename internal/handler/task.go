@@ -22,7 +22,7 @@ func NewTaskHandler(taskService service.TaskService) *TaskHandler {
 }
 
 func (h *TaskHandler) List(w http.ResponseWriter, r *http.Request) {
-	user, ok := r.Context().Value(ctx.UserKey).(ctx.ContextUser)
+	user, ok := ctx.GetUserFromContext(r.Context())
 
 	if !ok {
 		// This should technically never happen if the middleware is working
@@ -62,7 +62,7 @@ func (h *TaskHandler) List(w http.ResponseWriter, r *http.Request) {
 
 func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 	// 0. Get the user context
-	user, ok := r.Context().Value(ctx.UserKey).(ctx.ContextUser)
+	user, ok := ctx.GetUserFromContext(r.Context())
 
 	if !ok {
 		// This should technically never happen if the middleware is working
