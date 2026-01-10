@@ -1,5 +1,7 @@
 version: "3"
 
+dotenv: [".env"]
+
 tasks:
   run:
     desc: Run the HTTP server
@@ -27,9 +29,9 @@ tasks:
   migrate:up:
     desc: Apply database migrations
     cmds:
-      - migrate -database "{{.DATABASE_URL}}" -path migrations up
+      - migrate -database "{{.DATABASE_URL}}" -path internal/database/migrations up
 
   migrate:down:
     desc: Rollback last migration
     cmds:
-      - migrate -database "{{.DATABASE_URL}}" -path migrations down 1
+      - migrate -database "{{.DATABASE_URL}}" -path internal/database/migrations down 1
