@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/RethikRaj/task_manager_go/internal/ctx"
 	"github.com/RethikRaj/task_manager_go/internal/dto"
 	"github.com/RethikRaj/task_manager_go/internal/errs"
 	"github.com/RethikRaj/task_manager_go/internal/service"
@@ -21,7 +22,20 @@ func NewTaskHandler(taskService service.TaskService) *TaskHandler {
 }
 
 func (h *TaskHandler) List(w http.ResponseWriter, r *http.Request) {
-	tasks, err := h.taskService.List(r.Context())
+	user, ok := r.Context().Value(ctx.UserKey).(ctx.ContextUser)
+
+	if !ok {
+		// This should technically never happen if the middleware is working
+		errResp := ErrorResponse{
+			Status:  http.StatusUnauthorized,
+			Message: "User not found in context",
+			Code:    "UNAUTHORIZED",
+			Success: false,
+		}
+		SendJSONResponse(w, errResp.Status, errResp)
+	}
+
+	tasks, err := h.taskService.ListTasksById(r.Context(), user.ID)
 
 	if err != nil {
 		errResp := ErrorResponse{
@@ -47,6 +61,20 @@ func (h *TaskHandler) List(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
+	// 0. Get the user context
+	user, ok := r.Context().Value(ctx.UserKey).(ctx.ContextUser)
+
+	if !ok {
+		// This should technically never happen if the middleware is working
+		errResp := ErrorResponse{
+			Status:  http.StatusUnauthorized,
+			Message: "User not found in context",
+			Code:    "UNAUTHORIZED",
+			Success: false,
+		}
+		SendJSONResponse(w, errResp.Status, errResp)
+	}
+
 	var req dto.CreateTaskRequest
 	// 1. Deserialization
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -64,7 +92,7 @@ func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 	req.Title = strings.TrimSpace(req.Title)
 
 	// 3. Call service
-	newTask, err := h.taskService.Create(r.Context(), req.Title)
+	newTask, err := h.taskService.Create(r.Context(), req.Title, user.ID)
 	if err != nil {
 		// Create a base error response
 		errResp := ErrorResponse{

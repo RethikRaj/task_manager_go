@@ -9,8 +9,8 @@ import (
 
 type TaskRepository interface {
 	Ping(ctx context.Context) error
-	List(ctx context.Context) ([]model.Task, error)
-	Create(ctx context.Context, title string) (model.Task, error)
+	ListTasksById(ctx context.Context, userId int) ([]model.Task, error)
+	Create(ctx context.Context, title string, userId int) (model.Task, error)
 }
 
 type taskRepository struct {
@@ -27,12 +27,13 @@ func (r *taskRepository) Ping(ctx context.Context) error {
 	return nil
 }
 
-func (r *taskRepository) List(ctx context.Context) ([]model.Task, error) {
+func (r *taskRepository) ListTasksById(ctx context.Context, userId int) ([]model.Task, error) {
 	rows, err := r.pool.Query(ctx, `
 		SELECT id, title, created_at
 		FROM tasks
+		WHERE user_id = $1
 		ORDER BY created_at DESC
-	`)
+	`, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -55,14 +56,14 @@ func (r *taskRepository) List(ctx context.Context) ([]model.Task, error) {
 	return tasks, nil
 }
 
-func (r *taskRepository) Create(ctx context.Context, title string) (model.Task, error) {
+func (r *taskRepository) Create(ctx context.Context, title string, userId int) (model.Task, error) {
 	var t model.Task
 
 	err := r.pool.QueryRow(ctx, `
-		INSERT INTO tasks (title)
-		VALUES ($1)
+		INSERT INTO tasks (title, user_id)
+		VALUES ($1, $2)
 		RETURNING id, title, created_at
-	`, title).Scan(&t.ID, &t.Title, &t.CreatedAt)
+	`, title, userId).Scan(&t.ID, &t.Title, &t.CreatedAt)
 
 	if err != nil {
 		return model.Task{}, err
