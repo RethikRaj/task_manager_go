@@ -11,6 +11,7 @@ type TaskRepository interface {
 	Ping(ctx context.Context) error
 	ListAllTasksByUser(ctx context.Context, userId int) ([]model.Task, error)
 	Create(ctx context.Context, title string, userId int) (model.Task, error)
+	GetByID(ctx context.Context, taskId int, userId int) (model.Task, error)
 }
 
 type taskRepository struct {
@@ -70,4 +71,14 @@ func (r *taskRepository) Create(ctx context.Context, title string, userId int) (
 	}
 
 	return t, nil
+}
+
+func (r *taskRepository) GetByID(ctx context.Context, taskId int, userId int) (model.Task, error) {
+	query := `SELECT id, title FROM TASKS WHERE id=$1 AND user_id=$2`
+
+	var t model.Task
+
+	err := r.pool.QueryRow(ctx, query, taskId, userId).Scan(&t.ID, &t.Title)
+
+	return t, err
 }

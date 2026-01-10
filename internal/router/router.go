@@ -20,6 +20,8 @@ func NewRouter(healthHandler *handler.HealthHandler, authHandler *handler.AuthHa
 
 	mux.Handle("GET /tasks", authMiddleware(http.HandlerFunc(taskHandler.ListAllTasksByUser)))
 	mux.Handle("POST /tasks", authMiddleware(http.HandlerFunc(taskHandler.Create)))
+	// Use {id} to define a path parameter
+	mux.Handle("GET /tasks/{id}", authMiddleware(http.HandlerFunc(taskHandler.GetByID)))
 
 	return mux
 }

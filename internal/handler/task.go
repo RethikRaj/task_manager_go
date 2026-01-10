@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/RethikRaj/task_manager_go/internal/ctx"
@@ -33,6 +34,7 @@ func (h *TaskHandler) ListAllTasksByUser(w http.ResponseWriter, r *http.Request)
 			Success: false,
 		}
 		SendJSONResponse(w, errResp.Status, errResp)
+		return
 	}
 
 	tasks, err := h.taskService.ListAllTasksByUser(r.Context(), user.ID)
@@ -73,6 +75,7 @@ func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 			Success: false,
 		}
 		SendJSONResponse(w, errResp.Status, errResp)
+		return
 	}
 
 	var req dto.CreateTaskRequest
@@ -128,4 +131,59 @@ func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	SendJSONResponse(w, successResp.Status, successResp)
+}
+
+func (h *TaskHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+	// 0. Get the user context
+	user, ok := ctx.GetUserFromContext(r.Context())
+
+	if !ok {
+		// This should technically never happen if the middleware is working
+		errResp := ErrorResponse{
+			Status:  http.StatusUnauthorized,
+			Message: "User not found in context",
+			Code:    "UNAUTHORIZED",
+			Success: false,
+		}
+		SendJSONResponse(w, errResp.Status, errResp)
+		return
+	}
+
+	// Retrieve ID from path
+	taskIdStr := r.PathValue("id")
+	taskId, err := strconv.Atoi(taskIdStr)
+
+	if err != nil {
+		errResp := ErrorResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Code:    "CONVERSION_ERROR",
+			Success: false,
+		}
+		SendJSONResponse(w, errResp.Status, errResp)
+	}
+
+	// Call Service
+	task, err := h.taskService.GetByID(r.Context(), taskId, user.ID)
+
+	if err != nil {
+		errResp := ErrorResponse{
+			Status:  http.StatusInternalServerError,
+			Message: err.Error(),
+			Code:    "INTERNAL_SERVER_ERROR",
+			Success: false,
+		}
+		SendJSONResponse(w, errResp.Status, errResp)
+		return
+	}
+
+	sucessResp := SuccessResponse{
+		Success: true,
+		Message: "Fetched task succesfully",
+		Data:    task,
+		Status:  http.StatusOK,
+	}
+
+	SendJSONResponse(w, sucessResp.Status, sucessResp)
+
 }

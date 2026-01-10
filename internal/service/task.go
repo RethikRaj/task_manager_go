@@ -12,6 +12,7 @@ type TaskService interface {
 	Ping(ctx context.Context) error
 	ListAllTasksByUser(ctx context.Context, userId int) ([]model.Task, error)
 	Create(ctx context.Context, title string, userId int) (model.Task, error)
+	GetByID(ctx context.Context, taskId int, userId int) (model.Task, error)
 }
 
 type taskService struct {
@@ -43,4 +44,8 @@ func (s *taskService) Create(ctx context.Context, title string, userId int) (mod
 	}
 
 	return s.taskRepo.Create(ctx, title, userId)
+}
+
+func (s *taskService) GetByID(ctx context.Context, taskId int, userId int) (model.Task, error) {
+	return s.taskRepo.GetByID(ctx, taskId, userId)
 }
