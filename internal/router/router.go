@@ -18,7 +18,7 @@ func NewRouter(healthHandler *handler.HealthHandler, authHandler *handler.AuthHa
 	// ---------- Private routes ----------
 	// We wrap each specific method/handler with the middleware
 
-	mux.Handle("GET /tasks", authMiddleware(http.HandlerFunc(taskHandler.List)))
+	mux.Handle("GET /tasks", authMiddleware(http.HandlerFunc(taskHandler.ListAllTasksByUser)))
 	mux.Handle("POST /tasks", authMiddleware(http.HandlerFunc(taskHandler.Create)))
 
 	return mux

@@ -21,7 +21,7 @@ func NewTaskHandler(taskService service.TaskService) *TaskHandler {
 	}
 }
 
-func (h *TaskHandler) List(w http.ResponseWriter, r *http.Request) {
+func (h *TaskHandler) ListAllTasksByUser(w http.ResponseWriter, r *http.Request) {
 	user, ok := ctx.GetUserFromContext(r.Context())
 
 	if !ok {
@@ -35,7 +35,7 @@ func (h *TaskHandler) List(w http.ResponseWriter, r *http.Request) {
 		SendJSONResponse(w, errResp.Status, errResp)
 	}
 
-	tasks, err := h.taskService.ListTasksById(r.Context(), user.ID)
+	tasks, err := h.taskService.ListAllTasksByUser(r.Context(), user.ID)
 
 	if err != nil {
 		errResp := ErrorResponse{

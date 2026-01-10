@@ -10,7 +10,7 @@ import (
 
 type TaskService interface {
 	Ping(ctx context.Context) error
-	ListTasksById(ctx context.Context, userId int) ([]model.Task, error)
+	ListAllTasksByUser(ctx context.Context, userId int) ([]model.Task, error)
 	Create(ctx context.Context, title string, userId int) (model.Task, error)
 }
 
@@ -28,8 +28,8 @@ func (s *taskService) Ping(ctx context.Context) error {
 	return s.taskRepo.Ping(ctx)
 }
 
-func (s *taskService) ListTasksById(ctx context.Context, userId int) ([]model.Task, error) {
-	return s.taskRepo.ListTasksById(ctx, userId)
+func (s *taskService) ListAllTasksByUser(ctx context.Context, userId int) ([]model.Task, error) {
+	return s.taskRepo.ListAllTasksByUser(ctx, userId)
 }
 
 func (s *taskService) Create(ctx context.Context, title string, userId int) (model.Task, error) {

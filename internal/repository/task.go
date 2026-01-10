@@ -9,7 +9,7 @@ import (
 
 type TaskRepository interface {
 	Ping(ctx context.Context) error
-	ListTasksById(ctx context.Context, userId int) ([]model.Task, error)
+	ListAllTasksByUser(ctx context.Context, userId int) ([]model.Task, error)
 	Create(ctx context.Context, title string, userId int) (model.Task, error)
 }
 
@@ -27,7 +27,7 @@ func (r *taskRepository) Ping(ctx context.Context) error {
 	return nil
 }
 
-func (r *taskRepository) ListTasksById(ctx context.Context, userId int) ([]model.Task, error) {
+func (r *taskRepository) ListAllTasksByUser(ctx context.Context, userId int) ([]model.Task, error) {
 	rows, err := r.pool.Query(ctx, `
 		SELECT id, title, created_at
 		FROM tasks
